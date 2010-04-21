@@ -1,0 +1,25 @@
+Todo/Goals:
+
+create terminal. xD
+tabbing
+callbacks
+stuff like that
+color schemes
+rcfile 
+
+mt - multi-terminal: a simple, tabbed, VTE based terminal that aims to simple, flexible, and maintain a ridiculously small codebase
+
+Basically another minimal GTK incarnation of gtk's VTE integration.
+
+I was looking for a alternative to Sakura, but is tabbed and gtk based.
+
+
+Bugs:
+
+
+None
+
+
+Swing me some electronic mail :) mutantturkey@gmail.com
+
+
