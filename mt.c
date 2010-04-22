@@ -5,8 +5,8 @@
 
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
-static void new_tab();
-static void close_tab();
+static void tab_new();
+static void tab_close();
 
 /* part of the code is from sakura. :) i just want a more minimal version, sakura is to code bloat for what i want. so snippets will do*/
 static GQuark term_data_id = 0;
@@ -28,7 +28,7 @@ struct term {
 	GtkWidget *vte;     /* Reference to VTE terminal */
 	GtkWidget *scrollbar;
 	GtkWidget *label;
-	gchar *label_text;
+	gchar *label_teoxt;
 };
 
 static void quit() {
@@ -38,10 +38,11 @@ static void quit() {
 gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
 if (event->state == GDK_CONTROL_MASK) {
 
-	/*if (gdk_keyval_to_lower(event->keyval) == GDK_f) {
-		gtk_widget_grab_focus(GTK_WIDGET(sb.bar));	
+	if (gdk_keyval_to_lower(event->keyval) == GDK_T) {
+	tab_new();
 		return TRUE;
 	}
+	/*
 	if (gdk_keyval_to_lower(event->keyval) == GDK_l) {
 		gtk_widget_grab_focus(GTK_WIDGET(sb.bar));
 		return TRUE;
@@ -76,7 +77,7 @@ if (event->state == GDK_CONTROL_MASK) {
 	}*/}
 	return FALSE;
 }
-static void close_tab() {
+static void tab_close() {
 	
 	
 	gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
@@ -92,18 +93,19 @@ static void close_tab() {
 
 }
 
-static void new_tab() {
+static void tab_new() {
 	
 	struct term *t;
 	t = g_new0(struct term, 1);
 	t->label = gtk_label_new("terminal");
 	t->vte = vte_terminal_new();
 	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
-	gint index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
-	
-	g_signal_connect(t->vte, "child-exited", G_CALLBACK(close_tab), NULL);
+	int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
+	printf("%d \n", index);
+	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
-	gtk_widget_has_focus(t->vte);
+	gtk_widget_grab_focus(t->vte);
+	
 }
 
 int main (int argc, char* argv[]) {
@@ -113,8 +115,8 @@ int main (int argc, char* argv[]) {
     mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
-    new_tab();
-    new_tab();
+    tab_new();
+    tab_new();
     gtk_container_add (GTK_CONTAINER(mt.win), mt.notebook);
     gtk_window_set_default_size(GTK_WINDOW(mt.win), 800, 800);
     gtk_widget_show_all(mt.win);	
