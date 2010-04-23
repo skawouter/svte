@@ -81,9 +81,10 @@ static void tab_close() {
 	
 	gtk_widget_hide(t->vte);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(mt.notebook), page);
+	page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
 	g_free(t);
-	if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 0) { quit(); }
-
+		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 0) { quit(); }
+	gtk_widget_grab_focus(gtk_notebook_get_nth_page(GTK_NOTEBOOK(mt.notebook), page));
 
 }
 
