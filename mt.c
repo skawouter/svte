@@ -14,6 +14,9 @@ static GQuark term_data_id = 0;
 #define  get_page_term( sakura, page_idx ) \
     (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 
+static char *font = "terminus 9";
+static glong scroll = 500;
+//static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
 
 static struct {
 	GtkWidget *win;
@@ -49,20 +52,21 @@ static void tab_close() {
 	
 	
 	gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
-		
+	
+	/*remove t structure and widgets*/	
 	struct term *t;
 	t = get_page_term(NULL, page);
-	
-	gtk_widget_hide(t->vte);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(mt.notebook), page);
-	page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
 	g_free(t);
+	
+	
+	gtk_widget_grab_focus(gtk_notebook_get_nth_page(GTK_NOTEBOOK(mt.notebook), gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook))));
+
+
+	
 		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE); }
 		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 0) { quit(); }
-		
-	gtk_widget_grab_focus(gtk_notebook_get_nth_page(GTK_NOTEBOOK(mt.notebook), page));
-
-}
+		}
 
 static void tab_new() {
 	
@@ -79,7 +83,13 @@ static void tab_new() {
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	
-	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), "Terminus 9");
+	
+	/*barrowed from sakura*/
+	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
+	// maybe i dont /REALLY NEED/ it. vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), httpregexp, 0);
+	vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
+	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), font);
+	
 	gtk_widget_show_all(mt.notebook);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
 	gtk_widget_grab_focus(t->vte);
@@ -89,11 +99,11 @@ int main (int argc, char* argv[]) {
     gtk_init (&argc, &argv);
     term_data_id = g_quark_from_static_string("mt");
     mt.notebook = gtk_notebook_new();
+    gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
     mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
  	gtk_window_set_default_size(GTK_WINDOW(mt.win), 800, 800);
-    tab_new();
     gtk_container_add (GTK_CONTAINER(mt.win), mt.notebook);
-
+	tab_new();
     gtk_widget_show_all(mt.win);
     
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
