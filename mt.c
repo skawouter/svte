@@ -20,6 +20,7 @@ static struct {
 	GtkWidget *notebook;
 	gchar *title;
 } mt;
+
 struct term {
 	GtkWidget *vte;     /* Reference to VTE terminal */
 	GtkWidget *scrollbar;
@@ -56,7 +57,7 @@ static void tab_close() {
 	gtk_notebook_remove_page(GTK_NOTEBOOK(mt.notebook), page);
 	page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
 	g_free(t);
-		
+		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE); }
 		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 0) { quit(); }
 		
 	gtk_widget_grab_focus(gtk_notebook_get_nth_page(GTK_NOTEBOOK(mt.notebook), page));
@@ -71,11 +72,14 @@ static void tab_new() {
 	t->vte = vte_terminal_new();
 	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 	int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
-	//sakura_set_page_term(NULL, index, t);
 	
+	if (index == 0) {
+		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE);
+	} else  { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), TRUE); }
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	
+	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), "Terminus 9");
 	gtk_widget_show_all(mt.notebook);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
 	gtk_widget_grab_focus(t->vte);
