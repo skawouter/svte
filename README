@@ -1,23 +1,21 @@
 Todo/Goals:
 
-create terminal. xD
-tabbing
-callbacks
-stuff like that
+vte callbacks
 color schemes
 rcfile 
+font configuration
+commenting and reworking some source.
 
-mt - multi-terminal: a simple, tabbed, VTE based terminal that aims to simple, flexible, and maintain a ridiculously small codebase
+
+mt - multi-terminal: a simple, tabbed, VTE based terminal that aims to simple, flexible, and maintain a ridiculously small codebase. white the footprint may not be even close to st, i feel it provides better integration to the modern linux environment. GTK's footprint isn't light, but it has excellent API and features.
 
 Basically another minimal GTK incarnation of gtk's VTE integration.
 
-I was looking for a alternative to Sakura, but is tabbed and gtk based.
+I was looking for a alternative to Sakura, Lilyterm and others. 
 
 
-Bugs:
 
-
-None
+Bugs: None
 
 
 Swing me some electronic mail :) mutantturkey@gmail.com
