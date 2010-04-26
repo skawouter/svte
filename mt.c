@@ -36,18 +36,16 @@ static void quit() {
 gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
 if (event->state == (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
 
-	if (gdk_keyval_to_lower(event->keyval) == GDK_t) {
-	tab_new();
-		return TRUE;
-	}
-	if (gdk_keyval_to_lower(event->keyval) == GDK_x) {
-		tab_close();
-		return TRUE;
-	}
+ if (gdk_keyval_to_lower(event->keyval) == GDK_t) {	tab_new(); return TRUE;	}
+ if (gdk_keyval_to_lower(event->keyval) == GDK_x) { tab_close();	return TRUE; }	
+ if (gdk_keyval_to_lower(event->keyval) == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
+ if (gdk_keyval_to_lower(event->keyval) == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
 	
 	}
 		return FALSE;
 }
+
+
 static void tab_close() {
 	
 	
@@ -85,6 +83,7 @@ static void tab_new() {
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	
 	
+	
 	/*barrowed from sakura*/
 	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
 	// maybe i dont /REALLY NEED/ it. vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), httpregexp, 0);
@@ -117,4 +116,6 @@ int main (int argc, char* argv[]) {
     config();
     
   gtk_main();  
+  
+  return 0;
 };
