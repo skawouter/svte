@@ -19,9 +19,10 @@ Basically another minimal GTK incarnation of gtk's VTE integration.
 I was looking for a alternative to Sakura, Lilyterm and others. 
 
 
-BUGS: Downsizing doesn't work,
+BUGS:
 
-GdkGeometry hints needed
+NONE 
+
 
 THANKS to:
 Sakura 
