@@ -76,6 +76,7 @@ static void tab_new() {
 	t->vte = vte_terminal_new();
 	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 	int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
+	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(mt.notebook), t->vte, TRUE);
 	
 	if (index == 0) {
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE);
@@ -104,7 +105,6 @@ static void config(){
     gtk_container_add (GTK_CONTAINER(mt.win), mt.notebook);
 	tab_new();
     gtk_widget_show_all(mt.win);
-    
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
     
