@@ -9,6 +9,7 @@ static void tab_new();
 static void tab_close();
 static void tab_geometry_hints();
 static void config();
+static void tab_title();
 /* part of the code is from sakura. :) i just want a more minimal version, sakura is to code bloat for what i want. so snippets will do*/
 /* i am very thankful for this part, because it really helped me figure out how to close tabs properly (sounds easy, but i am dumb as a doorknob*/
 static GQuark term_data_id = 0;
@@ -76,7 +77,6 @@ static void tab_geometry_hints(struct term *t) {
 	GtkBorder *border;
 	gint pad_x, pad_y;
 	gint char_width, char_height;
-	puts("1");
 	//vte_terminal_get_padding(VTE_TERMINAL(t->vte), (int *)&pad_x, (int *)&pad_y);
 	gtk_widget_style_get(GTK_WIDGET(t->vte), "inner-border", &border, NULL);
 	
@@ -93,7 +93,9 @@ static void tab_geometry_hints(struct term *t) {
 		gtk_window_set_geometry_hints(GTK_WINDOW (mt.win), GTK_WIDGET (t->vte), &hints, GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 }
 
-
+static void tab_title(){ 
+	
+}
 
 static void tab_new() {
 	
@@ -114,7 +116,7 @@ static void tab_new() {
 
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
-	
+	g_signal_connect(t->vte, "title-changed", G_CALLBACK(tab_title), NULL);
 	
 	
 	/*barrowed from sakura*/
@@ -133,7 +135,7 @@ static void config(){
     mt.notebook = gtk_notebook_new();
     gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
     mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
- 	gtk_window_set_default_size(GTK_WINDOW(mt.win), 800, 800);
+ 	gtk_window_set_default_size(GTK_WINDOW(mt.win), 500, 350);
     gtk_container_add (GTK_CONTAINER(mt.win), mt.notebook);
 	tab_new();
     gtk_widget_show_all(mt.win);
