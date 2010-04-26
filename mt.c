@@ -82,13 +82,14 @@ static void tab_geometry_hints(struct term *t) {
 	
 	char_width = vte_terminal_get_char_width(VTE_TERMINAL(t->vte));
 	char_height = vte_terminal_get_char_height(VTE_TERMINAL(t->vte));
-   puts("1");
+	
    hints.min_width = char_width + border->left + border->right;
    hints.min_height = char_height + border->top + border->bottom;
    hints.base_width = border->left + border->right;
    hints.base_height = border->top + border->bottom;
    hints.width_inc = char_width;
    hints.height_inc = char_height;
+   
 		gtk_window_set_geometry_hints(GTK_WINDOW (mt.win), GTK_WIDGET (t->vte), &hints, GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 }
 
