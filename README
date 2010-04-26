@@ -1,10 +1,12 @@
 Todo/Goals:
 
 vte callbacks
+http regex
 color schemes
 rcfile 
 font configuration
 commenting and reworking some source.
+minimal gtk or vte lib possible?
 
 
 mt - multi-terminal: a simple, tabbed, VTE based terminal that aims to simple, flexible, and maintain a ridiculously small codebase. white the footprint may not be even close to st, i feel it provides better integration to the modern linux environment. GTK's footprint isn't light, but it has excellent API and features.
@@ -14,10 +16,28 @@ Basically another minimal GTK incarnation of gtk's VTE integration.
 I was looking for a alternative to Sakura, Lilyterm and others. 
 
 
+BUGS: Downsizing doesn't work,
 
-Bugs: None
+GdkGeometry hints needed
+
+THANKS to:
+Sakura 
+Suckless.org
+LilyTerm
+tinyterm
+
+LICENSE: 
+This project is released under the GPL license. Scripts from surf are under the MIT/X license ( read the license file for MIT/X)
+
+for further information visit
+
+http://www.gnu.org/licenses/gpl.html
+http://en.wikipedia.org/wiki/MIT_License
+
+I used these as programs examples and they helped alot!
 
 
+CONTACT:
 Swing me some electronic mail :) mutantturkey@gmail.com
 
 
