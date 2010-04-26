@@ -1,15 +1,14 @@
-# surf - simple browser
-# See LICENSE file for copyright and license details.
+# multi-terminal - a simple gtk terminal
 
 include config.mk
 
-SRC = sb.c
+SRC = mt.c
 OBJ = ${SRC:.c=.o}
 
-all: options sb
+all: options mt
 
 options:
-	@echo sb build options:
+	@echo mt build options:
 	@echo "CFLAGS   = ${CFLAGS}"
 	@echo "LDFLAGS  = ${LDFLAGS}"
 	@echo "CC       = ${CC}"
@@ -21,31 +20,31 @@ options:
 ${OBJ}: config.mk
 
 
-sb: ${OBJ}
+mt: ${OBJ}
 	@echo CC -o $@
-	@${CC} -o $@ sb.o ${LDFLAGS}
+	@${CC} -o $@ mt.o ${LDFLAGS}
 
 clean:
 	@echo cleaning
-	@rm -f sb ${OBJ} sb-${VERSION}.tar.gz
+	@rm -f mt ${OBJ} mt-${VERSION}.tar.gz
 
 dist: clean
 	@echo creating dist tarball
-	@mkdir -p sb-${VERSION}
-	@cp -R Makefile config.mk ${SRC} sb-${VERSION}
-	@tar -cf sb-${VERSION}.tar sb-${VERSION}
-	@gzip sb-${VERSION}.tar
-	@rm -rf sb-${VERSION}
+	@mkdir -p mt-${VERSION}
+	@cp -R Makefile config.mk ${SRC} mt-${VERSION}
+	@tar -cf mt-${VERSION}.tar mt-${VERSION}
+	@gzip mt-${VERSION}.tar
+	@rm -rf mt-${VERSION}
 
 install: all
 	@echo installing executable file to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@cp -f sb ${DESTDIR}${PREFIX}/bin
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/sb
+	@cp -f mt ${DESTDIR}${PREFIX}/bin
+	@chmod 755 ${DESTDIR}${PREFIX}/bin/mt
 
 uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
-	@rm -f ${DESTDIR}${PREFIX}/bin/sb
+	@rm -f ${DESTDIR}${PREFIX}/bin/mt
 
 
 .PHONY: all options clean dist install uninstall
