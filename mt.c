@@ -7,15 +7,14 @@ static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
 static void tab_new();
 static void tab_close();
-
+static void config();
 /* part of the code is from sakura. :) i just want a more minimal version, sakura is to code bloat for what i want. so snippets will do*/
 /* i am very thankful for this part, because it really helped me figure out how to close tabs properly (sounds easy, but i am dumb as a doorknob*/
 static GQuark term_data_id = 0;
-#define  get_page_term( sakura, page_idx ) \
-    (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
+#define  get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 
 static char *font = "terminus 9";
-static glong scroll = 500;
+static long scroll = 500;
 //static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
 
 static struct {
@@ -33,6 +32,7 @@ struct term {
 static void quit() {
 	gtk_main_quit();
 }
+
 gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
 if (event->state == (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
 
@@ -89,15 +89,14 @@ static void tab_new() {
 	// maybe i dont /REALLY NEED/ it. vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), httpregexp, 0);
 	vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
 	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), font);
-	
+	//vte_terminal_set_
 	gtk_widget_show_all(mt.notebook);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
 	gtk_widget_grab_focus(t->vte);
 }
-
-int main (int argc, char* argv[]) {
-    gtk_init (&argc, &argv);
-    term_data_id = g_quark_from_static_string("mt");
+static void config(){
+	
+	term_data_id = g_quark_from_static_string("mt");
     mt.notebook = gtk_notebook_new();
     gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
     mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -108,6 +107,14 @@ int main (int argc, char* argv[]) {
     
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
+    
+	
+}
+
+int main (int argc, char* argv[]) {
+    gtk_init (&argc, &argv);
+    
+    config();
     
   gtk_main();  
 };
