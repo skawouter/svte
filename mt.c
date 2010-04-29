@@ -16,7 +16,7 @@ static GQuark term_data_id = 0;
 #define  get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 
 static char *font = "terminus 9";
-static long scroll = 500;
+static long scroll = 250;
 //static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
 
 static struct {
@@ -25,12 +25,11 @@ static struct {
 	gchar *title;
 } mt;
 
-struct term {
+typedef struct term {
 	GtkWidget *vte;     /* Reference to VTE terminal */
-	GtkWidget *scrollbar;
 	GtkWidget *label;
-	gchar *label_text;
-};
+} term;
+
 static void quit() {
 	gtk_main_quit();
 }
@@ -69,9 +68,9 @@ static void tab_close() {
 		}
 		
 		
-static void tab_geometry_hints(struct term *t) {
+static void tab_geometry_hints(term *t) {
 	
-	/*barrowed from sakura, but using non depreacated code*/
+	/*barrowed from sakura, but using non depreacated code patch by me :)*/
 	
 	GdkGeometry hints;
 	GtkBorder *border;
@@ -93,14 +92,23 @@ static void tab_geometry_hints(struct term *t) {
 		gtk_window_set_geometry_hints(GTK_WINDOW (mt.win), GTK_WIDGET (t->vte), &hints, GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 }
 
-static void tab_title(){ 
-	
+static void tab_title(GtkWidget *widget, term *t) { 
+
+	//const char *temp;
+	puts(":(");
+	//temp = vte_terminal_get_window_title(VTE_TERMINAL(t->vte));
+		const char *lol = gtk_label_get_text(GTK_LABEL(t->label));
+	const char *temp = vte_terminal_get_window_title(VTE_TERMINAL(t->vte));
+	gtk_label_set_text(GTK_LABEL(t->label), temp);
+		//gtk_label_set_label((GTK_LABEL(t->label), t->label_text);
+	//gtk_notebook_set_tab_label(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
+		
 }
 
 static void tab_new() {
 	
-	struct term *t;
-	t = g_new0(struct term, 1);
+	term *t;
+	t = g_new0(term, 1);
 	t->label = gtk_label_new("terminal");
 	t->vte = vte_terminal_new();
 	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
@@ -116,7 +124,7 @@ static void tab_new() {
 
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
-	g_signal_connect(t->vte, "title-changed", G_CALLBACK(tab_title), NULL);
+	g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
 	
 	
 	/*barrowed from sakura*/
