@@ -17,7 +17,7 @@ static GQuark term_data_id = 0;
 
 static char *font = "terminus 9";
 static long scroll = 250;
-//static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
+static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
 
 static struct {
 	GtkWidget *win;
@@ -39,10 +39,12 @@ if (event->state == (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
 
  if (gdk_keyval_to_lower(event->keyval) == GDK_t) {	tab_new(); return TRUE;	}
  if (gdk_keyval_to_lower(event->keyval) == GDK_x) { tab_close();	return TRUE; }	
+	}
+if (event->state == (GDK_MOD1_MASK))  {
  if (gdk_keyval_to_lower(event->keyval) == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
  if (gdk_keyval_to_lower(event->keyval) == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
-	
-	}
+ 
+}
 		return FALSE;
 }
 
@@ -93,23 +95,14 @@ static void tab_geometry_hints(term *t) {
 }
 
 static void tab_title(GtkWidget *widget, term *t) { 
-
-	//const char *temp;
-	puts(":(");
-	//temp = vte_terminal_get_window_title(VTE_TERMINAL(t->vte));
-		const char *lol = gtk_label_get_text(GTK_LABEL(t->label));
-	const char *temp = vte_terminal_get_window_title(VTE_TERMINAL(t->vte));
-	gtk_label_set_text(GTK_LABEL(t->label), temp);
-		//gtk_label_set_label((GTK_LABEL(t->label), t->label_text);
-	//gtk_notebook_set_tab_label(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
-		
+	gtk_label_set_text(GTK_LABEL(t->label), vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
 }
 
 static void tab_new() {
 	
 	term *t;
 	t = g_new0(term, 1);
-	t->label = gtk_label_new("terminal");
+	t->label = gtk_label_new("");
 	t->vte = vte_terminal_new();
 	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 	int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
@@ -125,7 +118,7 @@ static void tab_new() {
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
-	
+	vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), g_regex_new("(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*", G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL), 0);
 	
 	/*barrowed from sakura*/
 	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
@@ -142,6 +135,8 @@ static void config(){
 	term_data_id = g_quark_from_static_string("mt");
     mt.notebook = gtk_notebook_new();
     gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
+    //gtk_notebook_set_homogeneous_tabs(GTK_NOTEBOOK(mt.notebook), TRUE);
+    gtk_notebook_set_scrollable(GTK_NOTEBOOK(mt.notebook), TRUE);
     mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
  	gtk_window_set_default_size(GTK_WINDOW(mt.win), 500, 350);
     gtk_container_add (GTK_CONTAINER(mt.win), mt.notebook);
