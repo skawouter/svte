@@ -73,7 +73,7 @@ static void tab_close() {
 static void tab_geometry_hints(term *t) {
 	
 	/*barrowed from sakura, but using non depreacated code patch by me :)*/
-	
+	/* I dont need to call this every time, since the char width only changes once, maybe i'll make hints and border global and reuse them*/
 	GdkGeometry hints;
 	GtkBorder *border;
 	gint pad_x, pad_y;
@@ -101,6 +101,7 @@ static void tab_title(GtkWidget *widget, term *t) {
 static void tab_new() {
 	
 	term *t;
+	int *tmp;
 	t = g_new0(term, 1);
 	t->label = gtk_label_new("");
 	t->vte = vte_terminal_new();
@@ -118,8 +119,10 @@ static void tab_new() {
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
-	vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), g_regex_new("(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*", G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL), 0);
 	
+	*tmp = vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), g_regex_new("(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*", G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL), 0);
+	vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp, GDK_CROSSHAIR);
+	g_free (tmp);
 	/*barrowed from sakura*/
 	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
 	// maybe i dont /REALLY NEED/ it. vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), httpregexp, 0);
