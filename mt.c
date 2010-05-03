@@ -2,14 +2,14 @@
 #include <vte/vte.h>
 #include <gdk/gdkkeysyms.h>
 
-
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
-static void tab_new();
 static void tab_close();
-static void tab_geometry_hints();
-static void config();
 static void tab_title();
+static void tab_geometry_hints();
+static void tab_new();
+static void config();
+
 /* part of the code is from sakura. :) i just want a more minimal version, sakura is to code bloat for what i want. so snippets will do*/
 /* i am very thankful for this part, because it really helped me figure out how to close tabs properly (sounds easy, but i am dumb as a doorknob*/
 static GQuark term_data_id = 0;
@@ -19,59 +19,40 @@ static char *font = "terminus 9";
 static long scroll = 250;
 static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
 
-static struct {
-	GtkWidget *win;
-	GtkWidget *notebook;
-	gchar *title;
-} mt;
+static struct {	GtkWidget *win;	GtkWidget *notebook; gchar *title;} mt;
+typedef struct term { GtkWidget *vte; GtkWidget *label; } term;
 
-typedef struct term {
-	GtkWidget *vte;     /* Reference to VTE terminal */
-	GtkWidget *label;
-} term;
-
+/*helper function, if i ever need to do something while closing, like query if more than one tab :)*/
 static void quit() {
 	gtk_main_quit();
 }
 
 gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
 if (event->state == (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
-
  if (gdk_keyval_to_lower(event->keyval) == GDK_t) {	tab_new(); return TRUE;	}
  if (gdk_keyval_to_lower(event->keyval) == GDK_x) { tab_close();	return TRUE; }	
 	}
 if (event->state == (GDK_MOD1_MASK))  {
  if (gdk_keyval_to_lower(event->keyval) == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
  if (gdk_keyval_to_lower(event->keyval) == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
- 
-}
+	}
 		return FALSE;
 }
 
-
 static void tab_close() {
-	
-	
 	gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
-	
-	/*remove t structure and widgets*/	
 	struct term *t;
 	t = get_page_term(NULL, page);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(mt.notebook), page);
 	g_free(t);
 	
-	
 	gtk_widget_grab_focus(gtk_notebook_get_nth_page(GTK_NOTEBOOK(mt.notebook), gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook))));
-
-
 	
 		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE); }
 		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 0) { quit(); }
 		}
-		
-		
+			
 static void tab_geometry_hints(term *t) {
-	
 	/*barrowed from sakura, but using non depreacated code patch by me :)*/
 	/* I dont need to call this every time, since the char width only changes once, maybe i'll make hints and border global and reuse them*/
 	GdkGeometry hints;
@@ -109,9 +90,7 @@ static void tab_new() {
 	int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
 	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(mt.notebook), t->vte, TRUE);
 	
-	if ( gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) {
-		tab_geometry_hints(t);
-	}
+	if ( gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) { tab_geometry_hints(t);	}
 	if (index == 0) {
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE);
 	} else  { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), TRUE); }
@@ -125,10 +104,8 @@ static void tab_new() {
 	g_free (tmp);
 	/*barrowed from sakura*/
 	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
-	// maybe i dont /REALLY NEED/ it. vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), httpregexp, 0);
 	vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
 	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), font);
-	//vte_terminal_set_
 	gtk_widget_show_all(mt.notebook);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
 	gtk_widget_grab_focus(t->vte);
@@ -138,7 +115,6 @@ static void config(){
 	term_data_id = g_quark_from_static_string("mt");
     mt.notebook = gtk_notebook_new();
     gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
-    //gtk_notebook_set_homogeneous_tabs(GTK_NOTEBOOK(mt.notebook), TRUE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(mt.notebook), TRUE);
     mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
  	gtk_window_set_default_size(GTK_WINDOW(mt.win), 500, 350);
@@ -147,16 +123,11 @@ static void config(){
     gtk_widget_show_all(mt.win);
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
-    
-	
 }
 
 int main (int argc, char* argv[]) {
-    gtk_init (&argc, &argv);
-    
-    config();
-    
+  gtk_init (&argc, &argv);
+  config();
   gtk_main();  
-  
   return 0;
 };
