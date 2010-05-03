@@ -1,18 +1,17 @@
+
 commits to mt should be small and frequent, push them as soon as possible, once something works bug free, push it. That way it is easier to track changes over a period of time
 
 
 Todo/Goals:
 
 vte callbacks
-http regex
 color schemes
 rcfile 
-font configuration
 commenting and reworking some source.
 minimal gtk or vte lib possible?
 
 
-mt - multi-terminal: a simple, tabbed, VTE based terminal that aims to simple, flexible, and maintain a ridiculously small codebase. white the footprint may not be even close to st, i feel it provides better integration to the modern linux environment. GTK's footprint isn't light, but it has excellent API and features.
+mt - multi-terminal: a simple, tabbed, VTE based terminal that aims to simple, flexible, and maintain a ridiculously small codebase. while still aiming to be light and fast, i feel it provides better integration to the modern linux environment. GTK's footprint isn't light, but it has an excellent API, is easy to work with and is in development.
 
 Basically another minimal GTK incarnation of gtk's VTE integration.
 
@@ -37,8 +36,6 @@ for further information visit
 
 http://www.gnu.org/licenses/gpl.html
 http://en.wikipedia.org/wiki/MIT_License
-
-I used these as programs examples and they helped alot!
 
 
 CONTACT:
