@@ -2,9 +2,9 @@
 # Contributor:  Dannny <danny.a95@gmail.com>
 
 pkgname=mt-git
-pkgver=20100426
+pkgver=20100504
 pkgrel=1
-pkgdesc="mt - multi tabbed, a minimal GTK and VTE based terminal aiming to b    e clean and concise"
+pkgdesc="mt - multi term, a minimal GTK and VTE based terminal aiming to be clean and concise"
 arch=('any')
 url="http://github.com/mutantturkey/mt/"
 license=('GPL' 'MIT/X')
@@ -33,4 +33,6 @@ build() {
   cd "$srcdir/$_gitname"
   make || return 1
   make DESTDIR="$pkgdir" install || return 1
+
+  msg "terminus is the default font, if it is not installed, another font will be picked"
 }
