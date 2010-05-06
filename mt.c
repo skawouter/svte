@@ -36,9 +36,13 @@ if (event->state == (GDK_MOD1_MASK))  {
  if (gdk_keyval_to_lower(event->keyval) == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
  if (gdk_keyval_to_lower(event->keyval) == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
 	}
+ 
 		return FALSE;
 }
 
+gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event) {
+	
+}
 static void tab_close() {
 	gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
 	struct term *t;
@@ -46,12 +50,14 @@ static void tab_close() {
 	gtk_notebook_remove_page(GTK_NOTEBOOK(mt.notebook), page);
 	g_free(t);
 	
-	gtk_widget_grab_focus(gtk_notebook_get_nth_page(GTK_NOTEBOOK(mt.notebook), gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook))));
 	
-		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE); }
+	
+		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) {
+			 gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE);
+			 gtk_widget_grab_focus(gtk_notebook_get_nth_page(GTK_NOTEBOOK(mt.notebook), gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook))));
+		 }
 		if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 0) { quit(); }
-		}
-			
+		}		
 static void tab_geometry_hints(term *t) {
 	/*barrowed from sakura, but using non depreacated code patch by me :)*/
 	/* I dont need to call this every time, since the char width only changes once, maybe i'll make hints and border global and reuse them*/
@@ -74,11 +80,9 @@ static void tab_geometry_hints(term *t) {
    
 		gtk_window_set_geometry_hints(GTK_WINDOW (mt.win), GTK_WIDGET (t->vte), &hints, GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 }
-
 static void tab_title(GtkWidget *widget, term *t) { 
 	gtk_label_set_text(GTK_LABEL(t->label), vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
 }
-
 static void tab_new() {
 	
 	term *t;
@@ -123,8 +127,8 @@ static void config(){
     gtk_widget_show_all(mt.win);
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
+	g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb), NULL);
 }
-
 int main (int argc, char* argv[]) {
   gtk_init (&argc, &argv);
   config();
