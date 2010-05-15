@@ -9,7 +9,7 @@ static void tab_title();
 static void tab_geometry_hints();
 static void tab_new();
 static void config();
-
+static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data);
 /* part of the code is from sakura. :) i just want a more minimal version, sakura is to code bloat for what i want. so snippets will do*/
 /* i am very thankful for this part, because it really helped me figure out how to close tabs properly (sounds easy, but i am dumb as a doorknob*/
 static GQuark term_data_id = 0;
@@ -80,9 +80,19 @@ static void tab_geometry_hints(term *t) {
    
 		gtk_window_set_geometry_hints(GTK_WINDOW (mt.win), GTK_WIDGET (t->vte), &hints, GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 }
-static void tab_title(GtkWidget *widget, term *t) { 
-	gtk_label_set_text(GTK_LABEL(t->label), vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
+static void tab_title(GtkWidget *widget, term *t) {
+	gtk_label_set_text(GTK_LABEL(t->label), vte_terinal_get_window_title(VTE_TERMINAL(t->vte)));
+	
 }
+
+static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)   {
+		struct term *t;
+		t = get_page_term(NULL, page_num);
+		const char *title = vte_terminal_get_window_title(VTE_TERMINAL(t->vte));
+		if (title == NULL) { title = "mt";	}
+		gtk_window_set_title(GTK_WINDOW(mt.win), title);
+	}
+	
 static void tab_new() {
 	
 	term *t;
@@ -90,7 +100,7 @@ static void tab_new() {
 	t = g_new0(term, 1);
 	t->label = gtk_label_new("");
 	t->vte = vte_terminal_new();
-	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
+	
 	int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
 	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(mt.notebook), t->vte, TRUE);
 	
@@ -99,9 +109,16 @@ static void tab_new() {
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE);
 	} else  { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), TRUE); }
 
+
+
+	
+	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
+	
+	//vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte), TRUE);	
+	
 	
 	*tmp = vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), g_regex_new("(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*", G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL), 0);
 	vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp, GDK_CROSSHAIR);
@@ -110,10 +127,11 @@ static void tab_new() {
 	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
 	vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
 	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), font);
+	gtk_window_set_title(GTK_WINDOW(mt.win), vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
 	gtk_widget_show_all(mt.notebook);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
 	gtk_widget_grab_focus(t->vte);
-}
+	}
 static void config(){
 	
 	term_data_id = g_quark_from_static_string("mt");
@@ -128,6 +146,7 @@ static void config(){
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
 	g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb), NULL);
+	g_signal_connect (G_OBJECT(mt.notebook), "switch-page", G_CALLBACK(tab_focus), NULL);
 }
 int main (int argc, char* argv[]) {
   gtk_init (&argc, &argv);
