@@ -13,10 +13,11 @@ static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page, guint page_n
 /* part of the code is from sakura. :) i just want a more minimal version, sakura is to code bloat for what i want. so snippets will do*/
 /* i am very thankful for this part, because it really helped me figure out how to close tabs properly (sounds easy, but i am dumb as a doorknob*/
 static GQuark term_data_id = 0;
-#define  get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 static gboolean fullscreen;
+
+#define  get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 #define FONT "terminus 9"
-static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
+#define HTTPREGEX "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*"
 #define SCROLL 250
 
 static struct {	GtkWidget *win;	GtkWidget *notebook; gchar *title;} mt;
