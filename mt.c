@@ -14,7 +14,7 @@ static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page, guint page_n
 /* i am very thankful for this part, because it really helped me figure out how to close tabs properly (sounds easy, but i am dumb as a doorknob*/
 static GQuark term_data_id = 0;
 #define  get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
-
+static gboolean fullscreen;
 static char *font = "terminus 9";
 static long scroll = 250;
 static char *httpregexp =  "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
@@ -28,14 +28,17 @@ static void quit() {
 }
 
 gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
+	guint(g) = event->keyval;
 if (event->state == (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
- if (gdk_keyval_to_lower(event->keyval) == GDK_t) {	tab_new(); return TRUE;	}
- if (gdk_keyval_to_lower(event->keyval) == GDK_x) { tab_close();	return TRUE; }	
+ if (g == GDK_t) { tab_new(); return TRUE;	}
+ if (g == GDK_x) { tab_close();	return TRUE; }	
 	}
 if (event->state == (GDK_MOD1_MASK))  {
- if (gdk_keyval_to_lower(event->keyval) == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
- if (gdk_keyval_to_lower(event->keyval) == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
+ if (g == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
+ if (g == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
+ if (g == GDK_F11) { if(fullscreen) { gtk_window_unfullscreen(GTK_WINDOW(mt.win)); fullscreen = FALSE; } else { gtk_window_fullscreen(GTK_WINDOW(mt.win)); fullscreen = TRUE; }   }
 	}
+	
  
 		return FALSE;
 }
@@ -81,7 +84,7 @@ static void tab_geometry_hints(term *t) {
 		gtk_window_set_geometry_hints(GTK_WINDOW (mt.win), GTK_WIDGET (t->vte), &hints, GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 }
 static void tab_title(GtkWidget *widget, term *t) {
-	gtk_label_set_text(GTK_LABEL(t->label), vte_terinal_get_window_title(VTE_TERMINAL(t->vte)));
+	gtk_label_set_text(GTK_LABEL(t->label), vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
 	
 }
 
