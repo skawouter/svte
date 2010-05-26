@@ -2,26 +2,28 @@
 #include <vte/vte.h>
 #include <gdk/gdkkeysyms.h>
 
+
+static struct {	GtkWidget *win;	GtkWidget *notebook; gchar *title;} mt;
+typedef struct term { GtkWidget *vte; GtkWidget *label; } term;
+
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
+gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event, struct term *t);
 static void tab_close();
 static void tab_title();
 static void tab_geometry_hints();
 static void tab_new();
 static void config();
 static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data);
-/* part of the code is from sakura. :) i just want a more minimal version, sakura is to code bloat for what i want. so snippets will do*/
-/* i am very thankful for this part, because it really helped me figure out how to close tabs properly (sounds easy, but i am dumb as a doorknob*/
+
+
 static GQuark term_data_id = 0;
 static gboolean fullscreen;
-
 #define  get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 #define FONT "terminus 9"
 #define HTTPREGEX "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*"
 #define SCROLL 250
 
-static struct {	GtkWidget *win;	GtkWidget *notebook; gchar *title;} mt;
-typedef struct term { GtkWidget *vte; GtkWidget *label; } term;
 
 /*helper function, if i ever need to do something while closing, like query if more than one tab :)*/
 static void quit() {
@@ -30,22 +32,28 @@ static void quit() {
 
 gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
 	guint(g) = event->keyval;
-if (event->state == (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
+			 
+if ( ( event->state & (GDK_CONTROL_MASK|GDK_SHIFT_MASK) == (GDK_CONTROL_MASK|GDK_SHIFT_MASK) )) {
  if (g == GDK_T) { tab_new(); return TRUE;	}
- if (g == GDK_X) { tab_close();	return TRUE; }	
+ if (g == GDK_W) { tab_close();	return TRUE; }	
 	}
-if (event->state == (GDK_MOD1_MASK))  {
+if ( (event->state & (GDK_MOD1_MASK) ) == (GDK_MOD1_MASK))  {
  if (g == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
  if (g == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
- if (g == GDK_F11) { if(fullscreen) { gtk_window_unfullscreen(GTK_WINDOW(mt.win)); fullscreen = FALSE; return TRUE; } else { gtk_window_fullscreen(GTK_WINDOW(mt.win)); fullscreen = TRUE; return TRUE;}   }
+ if (g == GDK_F11) { if(fullscreen) { gtk_window_unfullscreen(GTK_WINDOW(mt.win)); fullscreen = FALSE; } else { gtk_window_fullscreen(GTK_WINDOW(mt.win)); fullscreen = TRUE; } return TRUE;  }
 	}
-	
- 
-		return FALSE;
+			return FALSE;
 }
 
-gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event) {
-	
+gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event, struct term *t) {
+	puts("LOL");
+/*	glong column, row;
+	gchar *match;
+	   match = vte_terminal_match_check(VTE_TERMINAL(t->vte), column, row, NULL);		
+	   printf("%d , %d", column, row);
+	   printf("LOL");
+	   puts(match);
+	   return TRUE;*/
 }
 static void tab_close() {
 	gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(mt.notebook));
@@ -69,7 +77,6 @@ static void tab_geometry_hints(term *t) {
 	GtkBorder *border;
 	gint pad_x, pad_y;
 	gint char_width, char_height;
-	//vte_terminal_get_padding(VTE_TERMINAL(t->vte), (int *)&pad_x, (int *)&pad_y);
 	gtk_widget_style_get(GTK_WIDGET(t->vte), "inner-border", &border, NULL);
 	
 	char_width = vte_terminal_get_char_width(VTE_TERMINAL(t->vte));
@@ -120,7 +127,7 @@ static void tab_new() {
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
-	
+	g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb), t);
 	//vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte), TRUE);	
 	
 	
@@ -149,7 +156,7 @@ static void config(){
     gtk_widget_show_all(mt.win);
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
-	g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb), NULL);
+	
 	g_signal_connect (G_OBJECT(mt.notebook), "switch-page", G_CALLBACK(tab_focus), NULL);
 }
 int main (int argc, char* argv[]) {
