@@ -22,7 +22,7 @@ static gboolean fullscreen;
 #define  get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 #define FONT "terminus 9"
 #define HTTPREGEX "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*"
-#define SCROLL 250
+#define SCROLL -1
 
 
 /*helper function, if i ever need to do something while closing, like query if more than one tab :)*/
@@ -106,7 +106,7 @@ static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page, guint page_n
 	
 static void tab_new() {
 	
-	term *t;
+	term *t, previous;
 	int *tmp;
 	t = g_new0(term, 1);
 	t->label = gtk_label_new("");
