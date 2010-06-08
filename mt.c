@@ -56,12 +56,17 @@ static GQuark term_data_id = 0;
 
 static gchar *font = "monospace 10";
 static gboolean fullscreen = FALSE;
+static gboolean nobold = FALSE;
+
 static int scroll = -1;
 static gboolean transparent = FALSE;
 static gchar *url_regex = "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
 static gboolean version = FALSE;
 
 static GOptionEntry options[] = { 
+
+  { "nobold", 'b', 0, G_OPTION_ARG_NONE, &nobold,
+    "Disable bold fonts", NULL }, 
   { "font", 'f', 0, G_OPTION_ARG_STRING, &font,
     "Font to use for displaying text", NULL }, 
   { "fullscreen", 'l', 0, G_OPTION_ARG_NONE, &fullscreen,
@@ -89,8 +94,9 @@ static void quit() {
 
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
   guint(g) = event->keyval;
-  if ((event->state &
-      (GDK_CONTROL_MASK|GDK_SHIFT_MASK) == (GDK_CONTROL_MASK|GDK_SHIFT_MASK))) {
+
+  if ((event->state & (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) ==
+      (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
     if (g == GDK_T) {
       tab_new();
       return TRUE;
@@ -231,6 +237,8 @@ static void tab_new() {
   g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb),
                    t);
   vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte), transparent);
+  vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), !nobold);
+
 
   *tmp = vte_terminal_match_add_gregex(
       VTE_TERMINAL(t->vte),
