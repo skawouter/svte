@@ -1,5 +1,5 @@
 # mocicon version:
-VERSION = 0.1.4
+VERSION = 0.1.4
 
 # Customize below to fit your system
 
