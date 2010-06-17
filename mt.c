@@ -39,12 +39,8 @@ typedef struct term {
 
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
-<<<<<<< HEAD
-gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event);
-=======
 gboolean button_press_cb(GtkWidget *widget, GdkEventButton *event,
                          struct term *t);
->>>>>>> vicfryzel/master
 static void tab_close();
 static void tab_title();
 static void tab_geometry_hints();
@@ -90,32 +86,6 @@ static void quit() {
   gtk_main_quit();
 }
 
-<<<<<<< HEAD
-gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
-	guint(g) = event->keyval;
-			 
-if ( event->state  == (GDK_CONTROL_MASK|GDK_SHIFT_MASK) ) {
- if (g == GDK_T) { tab_new(); return TRUE;	}
- if (g == GDK_W) { tab_close();	return TRUE; }
-	}
-if ( (event->state & (GDK_MOD1_MASK) ) == (GDK_MOD1_MASK))  {
- if (g == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
- if (g == GDK_Right) { gtk_notebook_next_page(GTK_NOTEBOOK(mt.notebook)); 	return TRUE; }
- if (g == GDK_F11) { if(fullscreen) { gtk_window_unfullscreen(GTK_WINDOW(mt.win)); fullscreen = FALSE; } else { gtk_window_fullscreen(GTK_WINDOW(mt.win)); fullscreen = TRUE; } return TRUE;  }
-	}
-			return FALSE;
-}
-
-gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event) {
-	puts("LOL");
-/*	glong column, row;
-	gchar *match;
-	   match = vte_terminal_match_check(VTE_TERMINAL(t->vte), column, row, NULL);		
-	   printf("%d , %d", column, row);
-	   printf("LOL");
-	   puts(match);
-	   return TRUE;*/
-=======
 
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
   guint(g) = event->keyval;
@@ -164,7 +134,6 @@ gboolean button_press_cb(GtkWidget *widget, GdkEventButton *event, struct term *
   puts(match);
   return TRUE;
 */
->>>>>>> vicfryzel/master
 }
 
 
@@ -235,55 +204,6 @@ static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
 
 
 static void tab_new() {
-<<<<<<< HEAD
-	
-	term *t, previous;
-	int *tmp;
-	t = g_new0(term, 1);
-	t->label = gtk_label_new("");
-	t->vte = vte_terminal_new();
-	
-	int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
-	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(mt.notebook), t->vte, TRUE);
-	
-	if ( gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) { tab_geometry_hints(t);	}
-	if (index == 0) {
-		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), FALSE);
-	} else  { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), TRUE); }
-
-
-	
-	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
-	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
-	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
-	g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
-	*tmp = vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), g_regex_new("(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*", G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL), 0);
-	vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp, GDK_CROSSHAIR);
-	g_free (tmp);
-	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), -1);
-	vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
-	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), FONT);
-	gtk_window_set_title(GTK_WINDOW(mt.win), vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
-	gtk_widget_show_all(mt.notebook);
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
-	gtk_widget_grab_focus(t->vte);
-	}
-static void config(){
-	
-	term_data_id = g_quark_from_static_string("mt");
-    mt.notebook = gtk_notebook_new();
-    gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
-    gtk_notebook_set_scrollable(GTK_NOTEBOOK(mt.notebook), TRUE);
-    mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
- 	gtk_window_set_default_size(GTK_WINDOW(mt.win), 500, 350);
-    gtk_container_add (GTK_CONTAINER(mt.win), mt.notebook);
-	tab_new();
-    gtk_widget_show_all(mt.win);
-    g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
-    g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
-	g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb), NULL);
-	g_signal_connect (G_OBJECT(mt.notebook), "switch-page", G_CALLBACK(tab_focus), NULL);
-=======
   term *t, previous;
   int *tmp;
   t = g_new0(term, 1);
@@ -328,7 +248,6 @@ static void config(){
   gtk_widget_show_all(mt.notebook);
   gtk_notebook_set_current_page(GTK_NOTEBOOK(mt.notebook), index);
   gtk_widget_grab_focus(t->vte);
->>>>>>> vicfryzel/master
 }
 
 
