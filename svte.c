@@ -23,7 +23,7 @@
 #include <glib/goption.h>
 #include <gtk/gtk.h>
 #include <vte/vte.h>
-
+#include <unistd.h>
 
 static struct {
   GtkWidget *win;
@@ -35,12 +35,14 @@ static struct {
 typedef struct term {
   GtkWidget *vte;
   GtkWidget *label;
+  pid_t pid;
 } term;
 
 
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
 static void tab_close();
+static char* tab_get_cwd(struct term* t);
 static void tab_switch(gboolean b);
 static void tab_title();
 static void tab_geometry_hints();
@@ -141,6 +143,33 @@ static void tab_close() {
   }
 }
 
+/* Retrieve the cwd of the specified term page.
+ * Original function was from terminal-screen.c of gnome-terminal, copyright (C) 2001 Havoc Pennington
+ * Adapted by Hong Jen Yee, non-linux shit removed by David GÃ³mez */
+static char* tab_get_cwd(struct term* t)
+{
+    char *cwd = NULL;
+
+    if (t->pid >= 0) {
+        char *file;
+        char buf[255+1];
+        int len;
+
+        file = g_strdup_printf ("/proc/%d/cwd", t->pid);
+        len = readlink (file, buf, sizeof (buf) - 1);
+
+        if (len > 0 && buf[0] == '/') {
+            buf[len] = '\0';
+            cwd = g_strdup(buf);
+        }
+
+        g_free(file);
+    }
+
+    return cwd;
+}
+
+
 static void tab_switch(gboolean b) {
 
 gint(current) = gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook));
@@ -204,27 +233,34 @@ static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
 
 
 static void tab_new() {
-  term *t, previous;
+  term *t;
   int *tmp;
+  
+  struct term *previous = get_page_term(NULL, 
+  	gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook)));
+  
   t = g_new0(term, 1);
   t->label = gtk_label_new("");
   t->vte = vte_terminal_new();
-
   int index = gtk_notebook_append_page(GTK_NOTEBOOK(svte.notebook), t->vte,
                                        t->label);
   gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(svte.notebook), t->vte, TRUE);
 
   if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(svte.notebook)) == 1) {
+	    t->pid = vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL,
+                            FALSE, FALSE, FALSE);
     tab_geometry_hints(t);
-  }
+  } else {
+		t->pid = vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, tab_get_cwd(previous),
+                            FALSE, FALSE, FALSE);
+	  }
   if (index == 0) {
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), FALSE);
   } else {
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), TRUE);
   }
 
-  vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL,
-                            FALSE, FALSE, FALSE);
+ 
   g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page(
       (GtkNotebook*)svte.notebook, index)), term_data_id, t, NULL);
   g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
