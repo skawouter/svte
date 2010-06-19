@@ -1,38 +1,36 @@
 # Maintainer: Calvin Morrison <mutantturkey@gmail.com>
 # Contributor:  Dannny <danny.a95@gmail.com>
 
-pkgname=mt-git
-pkgver=20100504
+pkgname=svte-hg
+pkgver=51
 pkgrel=1
-pkgdesc="mt - multi term, a minimal GTK and VTE based terminal aiming to be clean and concise"
-arch=('any')
-url="http://github.com/mutantturkey/mt/"
+pkgdesc="simple virtual terminal emulator: A minimal, tabbed, VTE-based terminal"
+arch=('i686' 'x86_64')
+url="http://code.google.com/p/svte/"
 license=('GPL' 'MIT/X')
 depends=('gtk2' 'vte')
-makedepends=('git')
-provides=('mt')
-conflicts=('mt')
+makedepends=('mercurial')
+conflicts=('svte')
 
-_gitroot=git://github.com/mutantturkey/mt.git
-_gitname=mt
+_hgroot=http://svte.googlecode.com/hg/
+_hgrepo=svte
 
 build() {
   cd $srcdir
 
-  msg "connecting to github's GIT server...."
+  	if [ -d ${_hgrepo} ]; then
+		cd ${startdir}/src/${_hgrepo}
+		hg pull -u
+	else
+		hg clone ${_hgroot}${_hgrepo} || return 1
+		cd ${startdir}/src/${_hgrepo}
+	fi
 
-  if [ -d $startdir/src/$_gitname ] ; then
-    cd $_gitname && git-pull origin
-    msg "The local files are updated."
-  else
-    git clone $_gitroot
-  fi
+  msg "Mercurial clone done or server timeout"
+  msg "Starting make..."
 
-  msg "GIT checkout done"
+	make || return 1
+	make DESTDIR=${pkgdir} install
 
-  cd "$srcdir/$_gitname"
-  make || return 1
-  make DESTDIR="$pkgdir" install || return 1
 
-  msg "terminus is the default font, if it is not installed, another font will be picked"
 }
