@@ -246,19 +246,22 @@ static void tab_new() {
                                        t->label);
   gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(svte.notebook), t->vte, TRUE);
 
-  if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(svte.notebook)) == 1) {
+  if (index == 0) {
+	    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), FALSE);
 	    t->pid = vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL,
-                            FALSE, FALSE, FALSE);
+                            FALSE, FALSE, FALSE); 
     tab_geometry_hints(t);
+    
   } else {
 		t->pid = vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, tab_get_cwd(previous),
                             FALSE, FALSE, FALSE);
+                                gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), TRUE);
 	  }
-  if (index == 0) {
+ /* if (index == 0) {
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), FALSE);
   } else {
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), TRUE);
-  }
+  }*/
 
  
   g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page(
