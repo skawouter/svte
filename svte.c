@@ -41,6 +41,7 @@ typedef struct term {
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
 static void tab_close();
+static void tab_switch(gboolean b);
 static void tab_title();
 static void tab_geometry_hints();
 static void tab_new();
@@ -100,11 +101,11 @@ gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
   }
   if ((event->state & (GDK_MOD1_MASK) ) == (GDK_MOD1_MASK)) {
     if (g == GDK_Left) {
-      gtk_notebook_prev_page(GTK_NOTEBOOK(svte.notebook));
+      tab_switch(FALSE);
       return TRUE;
     }
     if (g == GDK_Right) {
-      gtk_notebook_next_page(GTK_NOTEBOOK(svte.notebook));
+	  tab_switch(TRUE);
       return TRUE;
     }
     if (g == GDK_F11) {
@@ -140,13 +141,28 @@ static void tab_close() {
   }
 }
 
+static void tab_switch(gboolean b) {
+
+gint(current) = gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook));
+
+if(b) {
+if (current == gtk_notebook_get_n_pages(GTK_NOTEBOOK(svte.notebook)) -1 ) { current = 0; }
+else { current	= current + 1;}
+} else{
+if (current == 0) {
+current = gtk_notebook_get_n_pages(GTK_NOTEBOOK(svte.notebook)) - 1; }
+else {current = current -1; }
+}
+
+gtk_notebook_set_current_page(GTK_NOTEBOOK(svte.notebook), current);
+
+}
 
 static void tab_geometry_hints(term *t) {
   // I dont need to call this every time, since the char width only changes
   // once, maybe I'll make hints and border global and reuse them
   GdkGeometry hints;
   GtkBorder *border;
-  gint pad_x, pad_y;
   gint char_width, char_height;
   gtk_widget_style_get(GTK_WIDGET(t->vte), "inner-border", &border, NULL);
 
