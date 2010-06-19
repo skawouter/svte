@@ -2,12 +2,12 @@
 # Contributor:  Dannny <danny.a95@gmail.com>
 
 pkgname=svte-hg
-pkgver=51
-pkgrel=1
+pkgver=20100717
+pkgrel=2
 pkgdesc="simple virtual terminal emulator: A minimal, tabbed, VTE-based terminal"
 arch=('i686' 'x86_64')
 url="http://code.google.com/p/svte/"
-license=('GPL' 'MIT/X')
+license=('GPL')
 depends=('gtk2' 'vte')
 makedepends=('mercurial')
 conflicts=('svte')
