@@ -8,7 +8,7 @@ typedef struct term { GtkWidget *vte; GtkWidget *label; } term;
 
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
-gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event, struct term *t);
+gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event);
 static void tab_close();
 static void tab_title();
 static void tab_geometry_hints();
@@ -33,9 +33,9 @@ static void quit() {
 gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {	
 	guint(g) = event->keyval;
 			 
-if ( ( event->state & (GDK_CONTROL_MASK|GDK_SHIFT_MASK) == (GDK_CONTROL_MASK|GDK_SHIFT_MASK) )) {
+if ( event->state  == (GDK_CONTROL_MASK|GDK_SHIFT_MASK) ) {
  if (g == GDK_T) { tab_new(); return TRUE;	}
- if (g == GDK_W) { tab_close();	return TRUE; }	
+ if (g == GDK_W) { tab_close();	return TRUE; }
 	}
 if ( (event->state & (GDK_MOD1_MASK) ) == (GDK_MOD1_MASK))  {
  if (g == GDK_Left) { gtk_notebook_prev_page(GTK_NOTEBOOK(mt.notebook)); return TRUE;  }
@@ -45,7 +45,7 @@ if ( (event->state & (GDK_MOD1_MASK) ) == (GDK_MOD1_MASK))  {
 			return FALSE;
 }
 
-gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event, struct term *t) {
+gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event) {
 	puts("LOL");
 /*	glong column, row;
 	gchar *match;
@@ -121,21 +121,15 @@ static void tab_new() {
 	} else  { gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mt.notebook), TRUE); }
 
 
-
 	
 	vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL, FALSE, FALSE, FALSE);
 	g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page((GtkNotebook*)mt.notebook, index)), term_data_id, t, NULL);
 	g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
 	g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
-	g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb), t);
-	//vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte), TRUE);	
-	
-	
 	*tmp = vte_terminal_match_add_gregex(VTE_TERMINAL(t->vte), g_regex_new("(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*", G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL), 0);
 	vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp, GDK_CROSSHAIR);
 	g_free (tmp);
-	/*barrowed from sakura*/
-	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), SCROLL);
+	vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), -1);
 	vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
 	vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), FONT);
 	gtk_window_set_title(GTK_WINDOW(mt.win), vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
@@ -156,7 +150,7 @@ static void config(){
     gtk_widget_show_all(mt.win);
     g_signal_connect (G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);    
     g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL); 
-	
+	g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb), NULL);
 	g_signal_connect (G_OBJECT(mt.notebook), "switch-page", G_CALLBACK(tab_focus), NULL);
 }
 int main (int argc, char* argv[]) {
