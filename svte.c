@@ -40,7 +40,8 @@ typedef struct term {
 
 
 static void quit();
-gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
+gboolean event_key(GtkWidget *widget, GdkEventKey *event);
+gboolean event_button(GtkWidget *widget, GdkEventButton *button_event, gpointer user_data);
 static void tab_close();
 static char* tab_get_cwd(struct term* t);
 static void tab_switch(gboolean b);
@@ -87,7 +88,7 @@ static void quit() {
 }
 
 
-gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
+gboolean event_key(GtkWidget *widget, GdkEventKey *event) {
   guint(g) = event->keyval;
 
   if ((event->state & (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) ==
@@ -124,6 +125,10 @@ gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
   return FALSE;
 }
 
+gboolean event_button(GtkWidget *widget, GdkEventButton *button_event, gpointer user_data) {
+/* todo, needs to handle: regex copy paste, selection copy and paste, */
+	
+}
 
 static void tab_close() {
   gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook));
@@ -255,15 +260,9 @@ static void tab_new() {
   } else {
 		t->pid = vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, tab_get_cwd(previous),
                             FALSE, FALSE, FALSE);
-                                gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), TRUE);
+        gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), TRUE);
 	  }
- /* if (index == 0) {
-    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), FALSE);
-  } else {
-    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), TRUE);
-  }*/
-
- 
+	   
   g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page(
       (GtkNotebook*)svte.notebook, index)), term_data_id, t, NULL);
   g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
@@ -307,7 +306,7 @@ static void configure_window() {
   tab_new();
   gtk_widget_show_all(svte.win);
   g_signal_connect(G_OBJECT(svte.win), "destroy", G_CALLBACK(quit), NULL);
-  g_signal_connect(svte.win, "key-press-event", G_CALLBACK(key_press_cb), NULL);
+  g_signal_connect(svte.win, "key-press-event", G_CALLBACK(event_key), NULL);
   g_signal_connect(G_OBJECT(svte.notebook), "switch-page", G_CALLBACK(tab_focus),
                    NULL);
 } 
