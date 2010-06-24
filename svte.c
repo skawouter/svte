@@ -77,12 +77,15 @@ typedef struct {
   gint num_scrollback_lines;
   gboolean scroll_on_keystroke;
   gboolean scroll_on_output;
-  gboolean transparent_bg;
+  gboolean bg_transparent;
+  gdouble bg_saturation;
+  gchar *bg_image;
   gchar *url_regex;
   gboolean visible_bell;
   gint window_height;
   gint window_width;
   gchar *word_chars;
+
 } Settings;
 static Settings *config;
 
@@ -282,7 +285,9 @@ static void tab_new() {
   vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), config->allow_bold);
   vte_terminal_set_audible_bell(VTE_TERMINAL(t->vte), config->audible_bell);
   vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte),
-                                          config->transparent_bg);
+                                          config->bg_transparent);
+	vte_terminal_set_background_saturation(VTE_TERMINAL(t->vte), config->bg_saturation);
+	vte_terminal_set_background_image_file(VTE_TERMINAL(t->vte), config->bg_image);
   vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), config->font);
   vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte),
                                   config->autohide_mouse);
@@ -380,8 +385,12 @@ static void parse_config_file(gchar *config_file) {
       keyfile, "ui", "scroll_on_keystroke", NULL);
   config->scroll_on_output = g_key_file_get_boolean(
       keyfile, "ui", "scroll_on_output", NULL);
-  config->transparent_bg = g_key_file_get_boolean(
-      keyfile, "ui", "transparent_bg", NULL);
+  config->bg_transparent = g_key_file_get_boolean(
+      keyfile, "ui", "bg_transparent", NULL);
+  config->bg_image = g_key_file_get_string(
+      keyfile, "ui", "bg_image", NULL);
+  config->bg_saturation = g_key_file_get_double(
+      keyfile, "ui", "bg_saturation", NULL);
   config->url_regex = g_key_file_get_string(
       keyfile, "ui", "url_regex", NULL);
   config->visible_bell = g_key_file_get_boolean(
