@@ -1,6 +1,7 @@
+#include <gdk/gdkkeysyms.h>
+#include <glib/goption.h>
 #include <gtk/gtk.h>
 #include <vte/vte.h>
-#include <gdk/gdkkeysyms.h>
 
 
 static struct {
@@ -30,11 +31,31 @@ static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
 
 
 static GQuark term_data_id = 0;
-static gboolean fullscreen;
 #define get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
-#define FONT "terminus 9"
-#define HTTPREGEX "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*"
-#define SCROLL -1
+
+
+static gchar *font = "monospace 10";
+static gboolean fullscreen = FALSE;
+static int scroll = -1;
+static gboolean transparent = FALSE;
+static gchar *url_regex = "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
+static gboolean version = FALSE;
+
+static GOptionEntry options[] = { 
+  { "font", 'f', 0, G_OPTION_ARG_STRING, &font,
+    "Font to use for displaying text", NULL }, 
+  { "fullscreen", 'l', 0, G_OPTION_ARG_NONE, &fullscreen,
+    "Start in fullsreen mode", NULL }, 
+  { "scroll", 's', 0, G_OPTION_ARG_INT, &scroll,
+    "Number of lines to scrollback.  -1 for unlimited", NULL },
+  { "transparent", 't', 0, G_OPTION_ARG_NONE, &transparent,
+    "Use a transparent background", NULL }, 
+  { "urlregex", 'u', 0, G_OPTION_ARG_STRING, &url_regex,
+    "Regular expression to use to display URLs as clickable", NULL },
+  { "version", 0, 0, G_OPTION_ARG_NONE, &version,
+    "Print version information and exit", NULL }, 
+  { NULL } 
+}; 
 
 
 /**
@@ -46,7 +67,7 @@ static void quit() {
 }
 
 
-gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {
+gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
   guint(g) = event->keyval;
   if ((event->state &
       (GDK_CONTROL_MASK|GDK_SHIFT_MASK) == (GDK_CONTROL_MASK|GDK_SHIFT_MASK))) {
@@ -82,7 +103,7 @@ gboolean key_press_cb (GtkWidget *widget, GdkEventKey *event) {
 }
 
 
-gboolean button_press_cb (GtkWidget *widget, GdkEventButton *event, struct term *t) {
+gboolean button_press_cb(GtkWidget *widget, GdkEventButton *event, struct term *t) {
   puts("LOL");
 /*
   glong column, row;
@@ -118,7 +139,7 @@ static void tab_close() {
 static void tab_geometry_hints(term *t) {
   // borrowed from sakura, but using non depreacated code patch by me :)
   // I dont need to call this every time, since the char width only changes
-  // once, maybe i'll make hints and border global and reuse them
+  // once, maybe I'll make hints and border global and reuse them
   GdkGeometry hints;
   GtkBorder *border;
   gint pad_x, pad_y;
@@ -136,8 +157,8 @@ static void tab_geometry_hints(term *t) {
   hints.height_inc = char_height;
 
   gtk_window_set_geometry_hints(
-      GTK_WINDOW (mt.win),
-      GTK_WIDGET (t->vte),
+      GTK_WINDOW(mt.win),
+      GTK_WIDGET(t->vte),
       &hints,
       GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 }
@@ -189,20 +210,19 @@ static void tab_new() {
   g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
   g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb),
                    t);
-  //vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte), TRUE);
+  vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte), transparent);
 
   *tmp = vte_terminal_match_add_gregex(
       VTE_TERMINAL(t->vte),
-      g_regex_new("(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*",
-                  G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL),
-      0);
+      g_regex_new(url_regex, G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL),
+                  0);
   vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp,
                                      GDK_CROSSHAIR);
-  g_free (tmp);
+  g_free(tmp);
   // borrowed from sakura
-  vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), SCROLL);
+  vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
   vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
-  vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), FONT);
+  vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), font);
   gtk_window_set_title(GTK_WINDOW(mt.win),
                        vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
   gtk_widget_show_all(mt.notebook);
@@ -216,20 +236,36 @@ static void config() {
   mt.notebook = gtk_notebook_new();
   gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
   gtk_notebook_set_scrollable(GTK_NOTEBOOK(mt.notebook), TRUE);
-  mt.win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  mt.win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  if (fullscreen) {
+    gtk_window_fullscreen(GTK_WINDOW(mt.win));
+  }
   gtk_window_set_default_size(GTK_WINDOW(mt.win), 500, 350);
   gtk_container_add(GTK_CONTAINER(mt.win), mt.notebook);
   tab_new();
   gtk_widget_show_all(mt.win);
-  g_signal_connect(G_OBJECT (mt.win), "destroy", G_CALLBACK (quit), NULL);
+  g_signal_connect(G_OBJECT(mt.win), "destroy", G_CALLBACK(quit), NULL);
   g_signal_connect(mt.win, "key-press-event", G_CALLBACK(key_press_cb), NULL);
   g_signal_connect(G_OBJECT(mt.notebook), "switch-page", G_CALLBACK(tab_focus),
                    NULL);
-}
+} 
 
 
 int main(int argc, char* argv[]) {
-  gtk_init (&argc, &argv);
+  gtk_init(&argc, &argv);
+  GError *error = NULL;
+  GOptionContext *context;
+  context = g_option_context_new("- a simple, tabbed, VTE based terminal");
+  g_option_context_add_main_entries(context, options, NULL);
+  g_option_context_add_group(context, gtk_get_option_group(TRUE));
+  if (!g_option_context_parse(context, &argc, &argv, &error)) {
+    g_print("option parsing failed: %s\n", error->message);
+    return 1;
+  }
+  if (version) {
+    printf(VERSION);
+    return 0;
+  }
   config();
   gtk_main();
   return 0;
