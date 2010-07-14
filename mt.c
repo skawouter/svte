@@ -92,8 +92,8 @@ static void quit() {
 
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
   guint(g) = event->keyval;
-  if ((event->state &
-      (GDK_CONTROL_MASK|GDK_SHIFT_MASK) == (GDK_CONTROL_MASK|GDK_SHIFT_MASK))) {
+  if ((event->state & (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) ==
+      (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
     if (g == GDK_T) {
       tab_new();
       return TRUE;
