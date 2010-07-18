@@ -18,6 +18,7 @@
  */
 
 
+#include "defaults.h"
 #include <gdk/gdkkeysyms.h>
 #include <glib/goption.h>
 #include <gtk/gtk.h>
@@ -45,7 +46,7 @@ static void tab_close();
 static void tab_title();
 static void tab_geometry_hints();
 static void tab_new();
-static void config();
+static void configure_window();
 static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
                       guint page_num, gpointer user_data);
 
@@ -54,33 +55,26 @@ static GQuark term_data_id = 0;
 #define get_page_term( sakura, page_idx ) (struct term*)g_object_get_qdata(G_OBJECT( gtk_notebook_get_nth_page( (GtkNotebook*)mt.notebook, page_idx ) ), term_data_id);
 
 
-static gchar *font = "monospace 10";
-static gboolean fullscreen = FALSE;
-static gboolean nobold = FALSE;
-
-static int scroll = -1;
-static gboolean transparent = FALSE;
-static gchar *url_regex = "(ftp|http)s?://[-a-zA-Z0-9.?$%&/=_~#.,:;+]*";
-static gboolean version = FALSE;
-
+static gchar *config_file = NULL;
+static gboolean show_version = FALSE;
 static GOptionEntry options[] = { 
-
-  { "nobold", 'b', 0, G_OPTION_ARG_NONE, &nobold,
-    "Disable bold fonts", NULL }, 
-  { "font", 'f', 0, G_OPTION_ARG_STRING, &font,
-    "Font to use for displaying text", NULL }, 
-  { "fullscreen", 'l', 0, G_OPTION_ARG_NONE, &fullscreen,
-    "Start in fullsreen mode", NULL }, 
-  { "scroll", 's', 0, G_OPTION_ARG_INT, &scroll,
-    "Number of lines to scrollback.  -1 for unlimited", NULL },
-  { "transparent", 't', 0, G_OPTION_ARG_NONE, &transparent,
-    "Use a transparent background", NULL }, 
-  { "urlregex", 'u', 0, G_OPTION_ARG_STRING, &url_regex,
-    "Regular expression to use to display URLs as clickable", NULL },
-  { "version", 0, 0, G_OPTION_ARG_NONE, &version,
+  { "config", 'c', 0, G_OPTION_ARG_FILENAME, &config_file,
+    "Path to configuration file to use.", NULL }, 
+  { "version", 0, 0, G_OPTION_ARG_NONE, &show_version,
     "Print version information and exit", NULL }, 
   { NULL } 
 }; 
+
+
+typedef struct {
+  gchar *font;
+  gboolean fullscreen;
+  gboolean bold;
+  gint num_scrollback_lines;
+  gboolean transparent_bg;
+  gchar *url_regex;
+} Settings;
+static Settings *config;
 
 
 /**
@@ -116,11 +110,12 @@ gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
       return TRUE;
     }
     if (g == GDK_F11) {
-      if(fullscreen) {
+      if(config->fullscreen) {
         gtk_window_unfullscreen(GTK_WINDOW(mt.win));
-        fullscreen = FALSE;
+        config->fullscreen = FALSE;
       } else {
-        gtk_window_fullscreen(GTK_WINDOW(mt.win)); fullscreen = TRUE;
+        gtk_window_fullscreen(GTK_WINDOW(mt.win));
+        config->fullscreen = TRUE;
       }
       return TRUE;
     }
@@ -163,7 +158,7 @@ static void tab_close() {
 
 
 static void tab_geometry_hints(term *t) {
-  // borrowed from sakura, but using non depreacated code patch by me :)
+  // borrowed from sakura, but using non deprecated code patch by me :)
   // I dont need to call this every time, since the char width only changes
   // once, maybe I'll make hints and border global and reuse them
   GdkGeometry hints;
@@ -216,7 +211,8 @@ static void tab_new() {
   t->label = gtk_label_new("");
   t->vte = vte_terminal_new();
 
-  int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte, t->label);
+  int index = gtk_notebook_append_page(GTK_NOTEBOOK(mt.notebook), t->vte,
+                                       t->label);
   gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(mt.notebook), t->vte, TRUE);
 
   if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(mt.notebook)) == 1) {
@@ -236,21 +232,24 @@ static void tab_new() {
   g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
   g_signal_connect(mt.win, "button-press-event", G_CALLBACK(button_press_cb),
                    t);
-  vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte), transparent);
-  vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), !nobold);
+  vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte),
+                                          config->transparent_bg);
+  vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), config->bold);
 
 
   *tmp = vte_terminal_match_add_gregex(
       VTE_TERMINAL(t->vte),
-      g_regex_new(url_regex, G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY, NULL),
-                  0);
+      g_regex_new(config->url_regex, G_REGEX_CASELESS, G_REGEX_MATCH_NOTEMPTY,
+                  NULL),
+      0);
   vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp,
-                                     GDK_CROSSHAIR);
+                                     GDK_HAND2);
   g_free(tmp);
   // borrowed from sakura
-  vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte), scroll);
+  vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte),
+                                    config->num_scrollback_lines);
   vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
-  vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), font);
+  vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), config->font);
   gtk_window_set_title(GTK_WINDOW(mt.win),
                        vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
   gtk_widget_show_all(mt.notebook);
@@ -259,13 +258,13 @@ static void tab_new() {
 }
 
 
-static void config() {
+static void configure_window() {
   term_data_id = g_quark_from_static_string("mt");
   mt.notebook = gtk_notebook_new();
   gtk_notebook_set_show_border(GTK_NOTEBOOK(mt.notebook), FALSE);
   gtk_notebook_set_scrollable(GTK_NOTEBOOK(mt.notebook), TRUE);
   mt.win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  if (fullscreen) {
+  if (config->fullscreen) {
     gtk_window_fullscreen(GTK_WINDOW(mt.win));
   }
   gtk_window_set_default_size(GTK_WINDOW(mt.win), 500, 350);
@@ -279,22 +278,74 @@ static void config() {
 } 
 
 
-int main(int argc, char* argv[]) {
-  gtk_init(&argc, &argv);
+static gboolean parse_command_line_options(int argc, char* argv[]) {
+  gboolean retval = TRUE;
   GError *error = NULL;
   GOptionContext *context;
   context = g_option_context_new("- a simple, tabbed, VTE based terminal");
   g_option_context_add_main_entries(context, options, NULL);
   g_option_context_add_group(context, gtk_get_option_group(TRUE));
   if (!g_option_context_parse(context, &argc, &argv, &error)) {
-    g_print("option parsing failed: %s\n", error->message);
+    g_error("Error parsing command-line options: %s\n", error->message);
+    retval = FALSE;
+  }
+  return retval;
+}
+
+
+static void parse_config_file(gchar *config_file) {
+  GKeyFile *keyfile;
+  GKeyFileFlags flags;
+  GError *error = NULL;
+  gsize length;
+
+  keyfile = g_key_file_new();
+  if (!g_key_file_load_from_file(keyfile, config_file, flags, &error)) {
+    g_warning("Error parsing config file %s: %s\n",
+              config_file,
+              error->message);
+  }
+
+  config = g_slice_new(Settings);
+  config->font = g_key_file_get_string(
+      keyfile, "font", "UI", NULL);
+  config->bold = g_key_file_get_boolean(
+      keyfile, "UI", "bold", NULL);
+  config->fullscreen = g_key_file_get_boolean(
+      keyfile, "UI", "fullscreen", NULL);
+  config->transparent_bg = g_key_file_get_boolean(
+      keyfile, "UI", "transparent_bg", NULL);
+  config->transparent_bg = g_key_file_get_boolean(
+      keyfile, "UI", "num_scrollback_lines", NULL);
+  config->url_regex = g_key_file_get_string(
+      keyfile, "UI", "url_regex", NULL);
+  if (NULL == config->font) {
+    config->font = DEFAULT_FONT;
+  }
+  if (NULL == config->url_regex) {
+    config->url_regex = DEFAULT_URL_REGEX;
+  }
+}
+
+
+int main(int argc, char* argv[]) {
+  gtk_init(&argc, &argv);
+
+  if(!parse_command_line_options(argc, argv)) {
     return 1;
   }
-  if (version) {
+
+  if (show_version) {
     printf(VERSION);
     return 0;
   }
-  config();
+
+  if (config_file == NULL) {
+    config_file = DEFAULT_CONFIG_FILE;
+  }
+  parse_config_file(config_file);
+
+  configure_window();
   gtk_main();
   return 0;
-};
+}
