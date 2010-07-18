@@ -308,17 +308,17 @@ static void parse_config_file(gchar *config_file) {
 
   config = g_slice_new(Settings);
   config->font = g_key_file_get_string(
-      keyfile, "font", "UI", NULL);
+      keyfile, "font", "ui", NULL);
   config->bold = g_key_file_get_boolean(
-      keyfile, "UI", "bold", NULL);
+      keyfile, "ui", "bold", NULL);
   config->fullscreen = g_key_file_get_boolean(
-      keyfile, "UI", "fullscreen", NULL);
+      keyfile, "ui", "fullscreen", NULL);
   config->transparent_bg = g_key_file_get_boolean(
-      keyfile, "UI", "transparent_bg", NULL);
+      keyfile, "ui", "transparent_bg", NULL);
   config->transparent_bg = g_key_file_get_boolean(
-      keyfile, "UI", "num_scrollback_lines", NULL);
+      keyfile, "ui", "num_scrollback_lines", NULL);
   config->url_regex = g_key_file_get_string(
-      keyfile, "UI", "url_regex", NULL);
+      keyfile, "ui", "url_regex", NULL);
   if (NULL == config->font) {
     config->font = DEFAULT_FONT;
   }
