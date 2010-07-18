@@ -1,9 +1,9 @@
-/* mt: A simple, tabbed, VTE based terminal
- * Copyright 2010 mutantturkey and mt contributors.
+/* svte: simple virtual terminal emulator: minimal, tabbed, VTE-based terminal
+ * Copyright 2010 mutantturkey and svte contributors.
  *
- * This file is part of mt.
+ * This file is part of svte.
  *
- * mt is free software: you can redistribute it and/or modify
+ * svte is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -19,7 +19,7 @@
 
 
 #ifndef DEFAULT_CONFIG_FILE
-#define DEFAULT_CONFIG_FILE g_build_path("/", g_get_home_dir(), ".mtrc")
+#define DEFAULT_CONFIG_FILE g_build_path("/", g_get_home_dir(), ".svterc")
 #endif
 #ifndef DEFAULT_FONT
 #define DEFAULT_FONT "monospace 10"

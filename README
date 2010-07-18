@@ -1,44 +1,56 @@
+svte: simple virtual terminal emulator: minimal, tabbed, VTE-based terminal
 
-commits to mt should be small and frequent, push them as soon as possible, once something works bug free, push it. That way it is easier to track changes over a period of time
-
-
-Todo/Goals:
-
-vte callbacks
-color schemes
-rcfile 
-commenting and reworking some source.
-minimal gtk or vte lib possible?
+svte is a terminal that is flexible and has a small codebase. Its aim is to be
+lightweight and fast, while providing nice integration with a modern Linux
+environment. svte is yet another minimal GTK incarnation of VTE. svte is an
+alternative to Sakura, Lilyterm, etc.
 
 
-mt - multi-terminal: a simple, tabbed, VTE based terminal that aims to simple, flexible, and maintain a ridiculously small codebase. while still aiming to be light and fast, i feel it provides better integration to the modern linux environment. GTK's footprint isn't light, but it has an excellent API, is easy to work with and is in development.
+= Goals of svte =
 
-Basically another minimal GTK incarnation of gtk's VTE integration.
-
-I was looking for a alternative to Sakura, Lilyterm and others. 
-
-
-BUGS:
-
-NONE 
+* Keep a small footprint, small codebase, and minimal implementation
+* Support a large amount of the VTE interface
+* Support color schemes
+* Load configuration information from an rc file 
 
 
-THANKS to:
-Sakura 
-Suckless.org
-LilyTerm
-tinyterm
+= Help =
 
-LICENSE: 
-This project is released under the GPL license. Scripts from surf are under the MIT/X license ( read the license file for MIT/X)
+svte usage information is available at the svte project site, located at
+http://code.google.com/p/svte/.
 
-for further information visit
-
-http://www.gnu.org/licenses/gpl.html
-http://en.wikipedia.org/wiki/MIT_License
+If you have questions or comments regarding using svte, send an email to the
+svte-users mailing list at svte-users@googlegroups.com.  To browse the group,
+see http://groups.google.com/group/svte-users/.
 
 
-CONTACT:
-Swing me some electronic mail :) mutantturkey@gmail.com
+= Contributing =
+
+Contributions to svte are most welcome.  Please submit patches or pull 
+requests to the svte-eng mailing list at svte-eng@googlegroups.com.  To browse
+the group, see http://groups.google.com/group/svte-eng/.
+
+All other information contributors might need, like change histories, the bug
+tracker, and documentation are available at the svte project site
+http://code.google.com/p/svte/.
 
 
+= Thanks =
+
+svte is made possible in part by the work of predecessory projects, including:
+
+* Sakura 
+* Suckless.org
+* LilyTerm
+* tinyterm
+
+
+= License =
+This project is released under the GPL license. Scripts from surf are under the
+MIT/X license (read the license file for MIT/X.)  Licenses are included with
+svte in the LICENSE file.
+
+For further information visit:
+
+* http://www.gnu.org/licenses/gpl.html
+* http://en.wikipedia.org/wiki/MIT_License
