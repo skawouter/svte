@@ -8,10 +8,10 @@ alternative to Sakura, Lilyterm, etc.
 
 = Goals of svte =
 
-* Keep a small footprint, small codebase, and minimal implementation
-* Support a large amount of the VTE interface
-* Support color schemes
-* Load configuration information from an rc file 
+ * Keep a small footprint, small codebase, and minimal implementation
+ * Support a large amount of the VTE interface
+ * Support color schemes
+ * Load configuration information from an rc file 
 
 
 = Help =
@@ -39,10 +39,10 @@ http://code.google.com/p/svte/.
 
 svte is made possible in part by the work of predecessory projects, including:
 
-* Sakura 
-* Suckless.org
-* LilyTerm
-* tinyterm
+ * Sakura 
+ * Suckless.org
+ * LilyTerm
+ * tinyterm
 
 
 = License =
@@ -52,5 +52,5 @@ svte in the LICENSE file.
 
 For further information visit:
 
-* http://www.gnu.org/licenses/gpl.html
-* http://en.wikipedia.org/wiki/MIT_License
+ * http://www.gnu.org/licenses/gpl.html
+ * http://en.wikipedia.org/wiki/MIT_License
