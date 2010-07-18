@@ -40,8 +40,6 @@ typedef struct term {
 
 static void quit();
 gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event);
-gboolean button_press_cb(GtkWidget *widget, GdkEventButton *event,
-                         struct term *t);
 static void tab_close();
 static void tab_title();
 static void tab_geometry_hints();
@@ -124,20 +122,6 @@ gboolean key_press_cb(GtkWidget *widget, GdkEventKey *event) {
 }
 
 
-gboolean button_press_cb(GtkWidget *widget, GdkEventButton *event, struct term *t) {
-  puts("LOL");
-/*
-  glong column, row;
-  gchar *match;
-  match = vte_terminal_match_check(VTE_TERMINAL(t->vte), column, row, NULL);
-  printf("%d , %d", column, row);
-  printf("LOL");
-  puts(match);
-  return TRUE;
-*/
-}
-
-
 static void tab_close() {
   gint page = gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook));
   struct term *t;
@@ -158,7 +142,6 @@ static void tab_close() {
 
 
 static void tab_geometry_hints(term *t) {
-  // borrowed from sakura, but using non deprecated code patch by me :)
   // I dont need to call this every time, since the char width only changes
   // once, maybe I'll make hints and border global and reuse them
   GdkGeometry hints;
@@ -230,8 +213,6 @@ static void tab_new() {
       (GtkNotebook*)svte.notebook, index)), term_data_id, t, NULL);
   g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
   g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
-  g_signal_connect(svte.win, "button-press-event", G_CALLBACK(button_press_cb),
-                   t);
   vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte),
                                           config->transparent_bg);
   vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), config->bold);
@@ -245,7 +226,6 @@ static void tab_new() {
   vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp,
                                      GDK_HAND2);
   g_free(tmp);
-  // borrowed from sakura
   vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte),
                                     config->num_scrollback_lines);
   vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
