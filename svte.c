@@ -69,12 +69,20 @@ static GOptionEntry options[] = {
 
 
 typedef struct {
+  gboolean audible_bell;
+  gboolean autohide_mouse;
+  gboolean allow_bold;
   gchar *font;
   gboolean fullscreen;
-  gboolean bold;
   gint num_scrollback_lines;
+  gboolean scroll_on_keystroke;
+  gboolean scroll_on_output;
   gboolean transparent_bg;
   gchar *url_regex;
+  gboolean visible_bell;
+  gint window_height;
+  gint window_width;
+  gchar *word_chars;
 } Settings;
 static Settings *config;
 
@@ -267,9 +275,21 @@ static void tab_new() {
       (GtkNotebook*)svte.notebook, index)), term_data_id, t, NULL);
   g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
   g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
+  vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), config->allow_bold);
+  vte_terminal_set_audible_bell(VTE_TERMINAL(t->vte), config->audible_bell);
   vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte),
                                           config->transparent_bg);
-  vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), config->bold);
+  vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), config->font);
+  vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte),
+                                  config->autohide_mouse);
+  vte_terminal_set_scroll_on_keystroke(VTE_TERMINAL(t->vte),
+                                       config->scroll_on_keystroke);
+  vte_terminal_set_scroll_on_output(VTE_TERMINAL(t->vte),
+                                    config->scroll_on_output);
+  vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte),
+                                    config->num_scrollback_lines);
+  vte_terminal_set_visible_bell(VTE_TERMINAL(t->vte), config->visible_bell);
+  vte_terminal_set_word_chars(VTE_TERMINAL(t->vte), config->word_chars);
 
 
   *tmp = vte_terminal_match_add_gregex(
@@ -280,10 +300,7 @@ static void tab_new() {
   vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp,
                                      GDK_HAND2);
   g_free(tmp);
-  vte_terminal_set_scrollback_lines(VTE_TERMINAL(t->vte),
-                                    config->num_scrollback_lines);
-  vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte), TRUE);
-  vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), config->font);
+
   gtk_window_set_title(GTK_WINDOW(svte.win),
                        vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
   gtk_widget_show_all(svte.notebook);
@@ -301,7 +318,9 @@ static void configure_window() {
   if (config->fullscreen) {
     gtk_window_fullscreen(GTK_WINDOW(svte.win));
   }
-  gtk_window_set_default_size(GTK_WINDOW(svte.win), 500, 350);
+  gtk_window_set_default_size(GTK_WINDOW(svte.win),
+                              config->window_width,
+                              config->window_height);
   gtk_container_add(GTK_CONTAINER(svte.win), svte.notebook);
   tab_new();
   gtk_widget_show_all(svte.win);
@@ -341,18 +360,30 @@ static void parse_config_file(gchar *config_file) {
   }
 
   config = g_slice_new(Settings);
+  config->audible_bell = g_key_file_get_boolean(
+      keyfile, "ui", "audible_bell", NULL);
+  config->autohide_mouse = g_key_file_get_boolean(
+      keyfile, "ui", "autohide_mouse", NULL);
+  config->allow_bold = g_key_file_get_boolean(
+      keyfile, "ui", "allow_bold", NULL);
   config->font = g_key_file_get_string(
-      keyfile, "font", "ui", NULL);
-  config->bold = g_key_file_get_boolean(
-      keyfile, "ui", "bold", NULL);
+      keyfile, "ui", "font", NULL);
   config->fullscreen = g_key_file_get_boolean(
       keyfile, "ui", "fullscreen", NULL);
+  config->num_scrollback_lines = g_key_file_get_integer(
+      keyfile, "ui", "num_scrollback_lines", NULL);
+  config->scroll_on_keystroke = g_key_file_get_boolean(
+      keyfile, "ui", "scroll_on_keystroke", NULL);
+  config->scroll_on_output = g_key_file_get_boolean(
+      keyfile, "ui", "scroll_on_output", NULL);
   config->transparent_bg = g_key_file_get_boolean(
       keyfile, "ui", "transparent_bg", NULL);
-  config->transparent_bg = g_key_file_get_boolean(
-      keyfile, "ui", "num_scrollback_lines", NULL);
   config->url_regex = g_key_file_get_string(
       keyfile, "ui", "url_regex", NULL);
+  config->visible_bell = g_key_file_get_boolean(
+      keyfile, "ui", "visible_bell", NULL);
+  config->word_chars = g_key_file_get_string(
+      keyfile, "ui", "word_chars", NULL);
   if (NULL == config->font) {
     config->font = DEFAULT_FONT;
   }
