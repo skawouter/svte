@@ -382,6 +382,10 @@ static void parse_config_file(gchar *config_file) {
       keyfile, "ui", "url_regex", NULL);
   config->visible_bell = g_key_file_get_boolean(
       keyfile, "ui", "visible_bell", NULL);
+  config->window_height = g_key_file_get_integer(
+      keyfile, "ui", "window_height", NULL);
+  config->window_width = g_key_file_get_integer(
+      keyfile, "ui", "window_width", NULL);
   config->word_chars = g_key_file_get_string(
       keyfile, "ui", "word_chars", NULL);
   if (NULL == config->font) {
