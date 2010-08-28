@@ -19,7 +19,7 @@
 
 
 #ifndef DEFAULT_CONFIG_FILE
-#define DEFAULT_CONFIG_FILE g_build_path("/", g_get_home_dir(), ".svterc")
+#define DEFAULT_CONFIG_FILE g_build_path("/", g_get_home_dir(), ".svterc", NULL);
 #endif
 #ifndef DEFAULT_FONT
 #define DEFAULT_FONT "monospace 10"
