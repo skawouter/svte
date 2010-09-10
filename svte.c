@@ -41,7 +41,7 @@ typedef struct term {
 
 static void quit();
 gboolean event_key(GtkWidget *widget, GdkEventKey *event);
-gboolean event_button(GtkWidget *widget, GdkEventButton *button_event, gpointer user_data);
+gboolean event_button(GtkWidget *widget, GdkEventButton *button_event, struct term *t);
 static void tab_close();
 static char* tab_get_cwd(struct term* t);
 static void tab_switch(gboolean b);
@@ -137,9 +137,9 @@ gboolean event_key(GtkWidget *widget, GdkEventKey *event) {
 }
 
 
-gboolean event_button(GtkWidget *widget, GdkEventButton *button_event, gpointer user_data) {
-/* todo, needs to handle: regex copy paste, selection copy and paste, */
+gboolean event_button(GtkWidget *widget, GdkEventButton *button_event, struct term *t) {
 	
+  return FALSE;
 }
 
 
@@ -280,8 +280,9 @@ static void tab_new() {
    
   g_object_set_qdata_full(G_OBJECT(gtk_notebook_get_nth_page(
       (GtkNotebook*)svte.notebook, index)), term_data_id, t, NULL);
-  g_signal_connect(t->vte, "child-exited", G_CALLBACK(tab_close), NULL);
-  g_signal_connect(t->vte, "window-title-changed", G_CALLBACK(tab_title), t);
+  g_signal_connect(G_OBJECT(t->vte), "child-exited", G_CALLBACK(tab_close), NULL);
+  g_signal_connect(G_OBJECT(t->vte), "window-title-changed", G_CALLBACK(tab_title), t);
+  g_signal_connect(G_OBJECT(t->vte), "button-press-event", G_CALLBACK(event_button), t);
   vte_terminal_set_allow_bold(VTE_TERMINAL(t->vte), config->allow_bold);
   vte_terminal_set_audible_bell(VTE_TERMINAL(t->vte), config->audible_bell);
   vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte),
