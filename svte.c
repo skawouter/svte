@@ -257,8 +257,6 @@ static void tab_new() {
   term *t;
   int *tmp;
   
-  struct term *previous = get_page_term(NULL, 
-  	gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook)));
 
   char **args = 0;
   const gchar *shell = g_getenv("SHELL");
@@ -281,6 +279,8 @@ static void tab_new() {
                 args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, t->pid, NULL);
     tab_geometry_hints(t);
   } else {
+    struct term *previous = get_page_term(NULL, 
+      gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook)));
 
     vte_terminal_fork_command_full(VTE_TERMINAL(t->vte), 
                 VTE_PTY_DEFAULT, tab_get_cwd(previous), 
