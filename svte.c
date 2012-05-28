@@ -35,7 +35,7 @@ static struct {
 typedef struct term {
   GtkWidget *vte;
   GtkWidget *label;
-  pid_t pid;
+  GPid *pid;
 } term;
 
 
@@ -259,7 +259,14 @@ static void tab_new() {
   
   struct term *previous = get_page_term(NULL, 
   	gtk_notebook_get_current_page(GTK_NOTEBOOK(svte.notebook)));
-  
+
+  char **args = 0;
+  const gchar *shell = g_getenv("SHELL");
+  if (!shell) {
+    shell = "/bin/sh";
+  }
+  g_shell_parse_argv(shell, 0, &args, 0);
+
   t = g_new0(term, 1);
   t->label = gtk_label_new("");
   t->vte = vte_terminal_new();
@@ -269,12 +276,15 @@ static void tab_new() {
 
   if (index == 0) {
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), FALSE);
-    t->pid = vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, NULL,
-                                       FALSE, FALSE, FALSE); 
+    vte_terminal_fork_command_full(VTE_TERMINAL(t->vte), 
+                VTE_PTY_DEFAULT, NULL, 
+                args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, t->pid, NULL);
     tab_geometry_hints(t);
   } else {
-    t->pid = vte_terminal_fork_command(VTE_TERMINAL(t->vte), NULL, NULL, NULL, tab_get_cwd(previous),
-                                       FALSE, FALSE, FALSE);
+
+    vte_terminal_fork_command_full(VTE_TERMINAL(t->vte), 
+                VTE_PTY_DEFAULT, tab_get_cwd(previous), 
+                args, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, t->pid, NULL);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(svte.notebook), TRUE);
   }
    
