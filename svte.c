@@ -51,6 +51,7 @@ static void tab_new();
 static void configure_window();
 static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
                       guint page_num, gpointer user_data);
+static void set_window_title(guint page_num, term *t);
 
 
 static GQuark term_data_id = 0;
@@ -241,15 +242,20 @@ static void tab_title(GtkWidget *widget, term *t) {
 }
 
 
-static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
-                      guint page_num, gpointer user_data) {
-  struct term *t;
-  t = get_page_term(NULL, page_num);
+static void set_window_title(guint page_num, term *t){
   const char *title = vte_terminal_get_window_title(VTE_TERMINAL(t->vte));
   if (title == NULL) {
     title = "svte";
   }
   gtk_window_set_title(GTK_WINDOW(svte.win), title);
+}
+
+
+static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
+                      guint page_num, gpointer user_data) {
+  struct term *t;
+  t = get_page_term(NULL, page_num);
+  set_window_title(page_num, t);
 }
 
 
@@ -320,9 +326,7 @@ static void tab_new() {
   vte_terminal_match_set_cursor_type(VTE_TERMINAL(t->vte), *tmp,
                                      GDK_HAND2);
   g_free(tmp);
-
-  gtk_window_set_title(GTK_WINDOW(svte.win),
-                       vte_terminal_get_window_title(VTE_TERMINAL(t->vte)));
+  set_window_title(index, t);
   gtk_widget_show_all(svte.notebook);
   gtk_notebook_set_current_page(GTK_NOTEBOOK(svte.notebook), index);
   gtk_widget_grab_focus(t->vte);
