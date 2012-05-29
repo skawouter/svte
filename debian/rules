@@ -11,3 +11,7 @@
 
 %:
 	dh $@ 
+
+override_dh_install:
+	dh_install 
+	dh_install -psvte debian/svte.xpm usr/share/pixmaps/

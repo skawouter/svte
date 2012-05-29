@@ -1,0 +1,4 @@
+?package(svte):needs="X11" section="Applications/Terminal Emulators"\
+  title="svte"\
+  icon="/usr/share/pixmaps/svte.xpm"\
+  command="/usr/bin/svte"
