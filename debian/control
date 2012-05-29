@@ -1,0 +1,19 @@
+Source: svte
+Section: x11
+Priority: optional
+Maintainer: Wouter Van Rooy <woutervanrooy@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), libgtk-3-dev, libvte-2.90-dev
+Standards-Version: 3.9.3
+Homepage: http://code.google.com/p/svte/
+#Vcs-Git: git://git.debian.org/collab-maint/svte.git
+Vcs-Browser: http://code.google.com/p/svte/source/browse/
+
+Package: svte
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Provides: x-terminal-emulator
+Description: Multi-tabbed minimal GTK+/VTE terminal emulator
+ svte is a terminal that is flexible and has a small codebase. 
+ Its aim is to be lightweight and fast. 
+ Providing nice integration with a modern Linux environment. 
+ svte is yet another minimal GTK incarnation of VTE
