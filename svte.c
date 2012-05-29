@@ -267,7 +267,7 @@ static void tab_new() {
   char **args = 0;
   const gchar *shell = g_getenv("SHELL");
   if (!shell) {
-    shell = "/bin/sh";
+    shell = "sh";
   }
   g_shell_parse_argv(shell, 0, &args, 0);
 
