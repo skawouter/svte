@@ -11,7 +11,10 @@
 
 %:
 	dh $@ 
+<<<<<<< HEAD
 
 override_dh_install:
 	dh_install 
 	dh_install -psvte debian/svte.xpm usr/share/pixmaps/
+=======
+>>>>>>> 0cab788... Added debian packaging specific files
