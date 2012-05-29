@@ -49,7 +49,7 @@ static void tab_title();
 static void tab_geometry_hints();
 static void tab_new();
 static void configure_window();
-static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
+static void tab_focus(GtkNotebook *notebook, GtkWidget *page,
                       guint page_num, gpointer user_data);
 static void set_window_title(guint page_num, term *t);
 
@@ -105,25 +105,25 @@ gboolean event_key(GtkWidget *widget, GdkEventKey *event) {
 
   if ((event->state & (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) ==
       (GDK_CONTROL_MASK|GDK_SHIFT_MASK)) {
-    if (g == GDK_T) {
+    if (g == GDK_KEY_T) {
       tab_new();
       return TRUE;
     }
-    if (g == GDK_W) {
+    if (g == GDK_KEY_W) {
       tab_close();
       return TRUE;
     }
   }
   if ((event->state & (GDK_MOD1_MASK) ) == (GDK_MOD1_MASK)) {
-    if (g == GDK_Left) {
+    if (g == GDK_KEY_Left) {
       tab_switch(FALSE);
       return TRUE;
     }
-    if (g == GDK_Right) {
+    if (g == GDK_KEY_Right) {
 	  tab_switch(TRUE);
       return TRUE;
     }
-    if (g == GDK_F11) {
+    if (g == GDK_KEY_F11) {
       if(config->fullscreen) {
         gtk_window_unfullscreen(GTK_WINDOW(svte.win));
         config->fullscreen = FALSE;
@@ -251,7 +251,7 @@ static void set_window_title(guint page_num, term *t){
 }
 
 
-static void tab_focus(GtkNotebook *notebook, GtkNotebookPage *page,
+static void tab_focus(GtkNotebook *notebook, GtkWidget *page,
                       guint page_num, gpointer user_data) {
   struct term *t;
   t = get_page_term(NULL, page_num);
