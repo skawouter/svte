@@ -86,7 +86,10 @@ typedef struct {
   gint window_height;
   gint window_width;
   gchar *word_chars;
-
+  GdkColor foreground;
+  GdkColor background;
+  GdkColor *colour_palette;
+  gchar *cursor;
 } Settings;
 static Settings *config;
 
@@ -303,8 +306,8 @@ static void tab_new() {
   vte_terminal_set_audible_bell(VTE_TERMINAL(t->vte), config->audible_bell);
   vte_terminal_set_background_transparent(VTE_TERMINAL(t->vte),
                                           config->bg_transparent);
-	vte_terminal_set_background_saturation(VTE_TERMINAL(t->vte), config->bg_saturation);
-	vte_terminal_set_background_image_file(VTE_TERMINAL(t->vte), config->bg_image);
+  vte_terminal_set_background_saturation(VTE_TERMINAL(t->vte), config->bg_saturation);
+  vte_terminal_set_background_image_file(VTE_TERMINAL(t->vte), config->bg_image);
   vte_terminal_set_font_from_string(VTE_TERMINAL(t->vte), config->font);
   vte_terminal_set_mouse_autohide(VTE_TERMINAL(t->vte),
                                   config->autohide_mouse);
@@ -316,7 +319,8 @@ static void tab_new() {
                                     config->num_scrollback_lines);
   vte_terminal_set_visible_bell(VTE_TERMINAL(t->vte), config->visible_bell);
   vte_terminal_set_word_chars(VTE_TERMINAL(t->vte), config->word_chars);
-
+  vte_terminal_set_colors(VTE_TERMINAL(t->vte), &config->foreground,
+                            &config->background, config->colour_palette, DEFAULT_PALETTE_SIZE);
 
   *tmp = vte_terminal_match_add_gregex(
       VTE_TERMINAL(t->vte),
@@ -375,6 +379,8 @@ static void parse_config_file(gchar *config_file) {
   GKeyFileFlags flags;
   GError *error = NULL;
   gsize length;
+  gchar *addid; 
+  addid = (gchar *) g_malloc (3);
 
   keyfile = g_key_file_new();
   if (!g_key_file_load_from_file(keyfile, config_file, flags, &error)) {
@@ -416,12 +422,37 @@ static void parse_config_file(gchar *config_file) {
       keyfile, "ui", "window_width", NULL);
   config->word_chars = g_key_file_get_string(
       keyfile, "ui", "word_chars", NULL);
+  config->cursor = g_key_file_get_string(
+      keyfile, "colour scheme", "cursor", NULL);
+
+  config->colour_palette = (GdkColor *) g_malloc(sizeof(GdkColor) * DEFAULT_PALETTE_SIZE);
+  for (int i=0; i < DEFAULT_PALETTE_SIZE; i++){
+    g_snprintf(addid, 3, "%d", i);
+    gdk_color_parse(g_key_file_get_string(keyfile, "colour scheme", 
+                                            addid , NULL), &config->colour_palette[i]);
+  }
+
+  if (!gdk_color_parse(g_key_file_get_string(
+          keyfile, "colour scheme", "foreground", NULL), &config->foreground)){
+      gdk_color_parse(DEFAULT_FOREGROUND_COLOR, &config->foreground);
+      g_warning("Using default foreground color");
+  }
+  
+  if (!gdk_color_parse(g_key_file_get_string(
+          keyfile, "colour scheme", "background", NULL), &config->background)){
+      gdk_color_parse(DEFAULT_BACKGROUND_COLOR, &config->background);
+      g_warning("Using default background color");
+  }
+
   if (NULL == config->font) {
     config->font = DEFAULT_FONT;
   }
+
   if (NULL == config->url_regex) {
     config->url_regex = DEFAULT_URL_REGEX;
   }
+
+  g_free(addid);
 }
 
 
